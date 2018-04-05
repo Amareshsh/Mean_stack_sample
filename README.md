@@ -1,0 +1,376 @@
+
+_________________ CHEAT CODE TO DEVELOP SIMPLE MEAN APPLICATION_________________
+                          --By Amaresh hiremani
+
+
+
+Step 1 developing the front end in angular 2
+
+1) Installing node package manager globally
+   npm install -g @angular/cli
+
+2) Create a anugular 2 application in admin mode cmd
+   ng new my-app
+
+3) Serve the application in the localhost
+   cd my-app
+   ng serve --open
+
+4) designing the html page in app.component.html
+
+<div class="container">
+  <h3>Sample forms to get user details</h3>
+  <form #frm = "ngForm" (ngSubmit)="addDetails(frm)">
+    <div class="form-group">
+      <label for=""> Name:</label>
+      <input type="text"  class="form-control" name="name" value="" ngModel required>
+    </div>
+
+    <div class="form-group">
+      <label for="">  EmailId:</label>
+      <input type="text"  class="form-control" name="email" value="" ngModel required>
+    </div>
+
+    <div class="form-group">
+      <label for="">  PhoneNo:</label>
+      <input type="number"  class="form-control" name="phone" value="" ngModel required>
+    </div>
+
+    <button type="submit" name="button" class="btn btn-sucess" [disabled]=frm.invalid>Submit Details</button>
+  </form>
+</div>
+
+5) create the user details class ts file in my-app directory
+
+  export class User{
+    _id?: string;
+    name: string;
+    email: string;
+    phone: string;
+  }
+
+6) write the function called addDetails() in app.component.ts file by adding following in
+app.module.ts file since it requires forms moudle to get result from form
+
+//in  app.module.ts
+import { NgModule } from '@angular/core';
+
+import {HttpModule} from '@angular/http';
+
+import {FormsModule} from '@angular/forms';
+
+imports: [
+    BrowserModule,
+    HttpModule,
+    FormsModule
+  ]
+
+//in  app.component.ts
+
+addDetails(forms){
+
+    let user: User={
+      name: forms.value.name,
+      email:forms.value.email,
+      phone:forms.value.phone
+    };
+    console.log("email id:"+user.email);
+    console.log("name    :"+user.name);
+    console.log("phone   :"+user.phone);
+  }
+
+-----------------------------------------------------------------------------------------
+Step 1 completed
+
+
+Step 2 Developing the resultful apis with help of nodejs and express using mongodb as the back end storage runing on different port number other that angular2 front end.
+
+
+1) Go to backend folder and do:
+
+npm init
+
+package name: (backend) test
+version: (1.0.0)
+description: this is to test
+entry point: (index.js)
+test command:
+git repository:
+keywords:
+author:
+license: (ISC)
+About to write to C:\new_angular\sample\backend\package.json:
+
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "this is to test",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
+
+
+Is this ok? (yes) yes
+
+npm install body-parser --save
+npm install cors --save
+npm install express --save
+npm install mongoose --save
+
+2) create index.js inside the backend folder and add following code:
+
+ar express = require('express');
+var mongoose = require('mongoose');
+var bodyparser = require('body-parser');
+var cors = require('cors');
+
+
+var app = express();
+
+var routes = require('./route/routes');
+
+//connect to mongodb
+mongoose.connect('mongodb://localhost:27017/userlist');
+
+// on connection
+mongoose.connection.on('connected',()=>{
+  console.log('MongoDB connected at port number 27017');
+});
+
+mongoose.connection.on('error',(err)=>{
+  console.log(err);
+});
+
+const PORT = 3000;
+
+//adding middleware - cors
+app.use(cors());
+
+//body parser middleware
+app.use(bodyparser.json());
+
+app.use('/api',routes);
+
+app.get('/',(req,res)=>{
+  res.send("hello world!!");
+});
+
+app.listen(PORT, ()=>{
+  console.log('Server has been started at port 3000');
+});
+
+
+
+
+3) create the folder model and route inside the backend and add userlist.js to model and routes.js to route folder
+
+include following code in routes.js:
+
+var express = require('express');
+var router = express.Router();
+
+const User = require('../model/userlist');
+
+//retriving the data from database
+router.get('/users',(req,res,next)=>{
+  User.find(function(err,items){
+    if(err){
+      res.json(err);
+    }else{
+      res.json(items);
+    }
+  });
+});
+
+//inserting new data
+router.post('/user',(req,res,next)=>{
+  let newUser = new User({
+    name: req.body.name,
+    email: req.body.email,
+    phone: req.body.phone
+  });
+  newUser.save((err,item)=>{
+    if(err){
+      res.json(err);
+    }else{
+      res.json({msg:'New user inserted!!'});
+    }
+  })
+});
+
+//updating data
+router.put('/user/:id',(req,res,next)=>{
+  User.findOneAndUpdate({_id: req.params.id},{
+    $set:{
+        name: req.body.name,
+        email: req.body.email,
+        phone: req.body.phone
+    }
+  },
+function(err,result){
+  if(err){
+    res.json(err);
+  }else{
+    res.json(result);
+  }
+})
+});
+
+//deleting data
+router.delete('/user/:id',(req,res,next)=>{
+  User.remove({_id: req.params.id},function(err,result){
+    if(err){
+      res.json(err);
+    }else{
+      res.json(result);
+    }
+  })
+});
+
+
+module.exports = router;
+
+
+And this code in userlist.js:
+
+
+const mongoose = require('mongoose');
+
+const UserItems = mongoose.Schema({
+  name:{
+    type: String,
+    required: true
+  },
+  email:{
+    type:String,
+    required:true
+  },
+  phone:{
+    type:Number,
+    required: true
+  }
+});
+
+const user = module.exports = mongoose.model('User',UserItems);
+
+------------------------------------------------------------------------------------
+Step 2 completed
+
+
+
+In Step 3 includes checking the apis uisng the postman if you have done skip to next
+
+
+-----------yet to be written ------------------
+
+-------------------------------------------------------------------------------------
+Step 3 completed
+
+
+In Step 4 head to the angular2 application front end and run this in cmd:
+
+ng generate service datas
+
+go to datas.service.ts and enter:
+
+import {Http, Response, Headers} from '@angular/http';
+
+import 'rxjs/add/operator/map';
+
+@Injectable()
+export class DatasService {
+
+  constructor(private http: Http) { }
+
+  getUser(){
+    return this.http.get('http://localhost:3000/api/users')
+    .map( res => res.json());
+  }
+
+  addUser(newItem){
+    let headers = new Headers();
+    headers.append('Content-Type' ,'application/json');
+    return this.http.post('http://localhost:3000/api/user',newItem,{headers: headers})
+    .map( res => res.json());
+  }
+
+  deleteUser(id){
+    return this.http.delete('http://localhost:3000/api/user/'+id)
+    .map(res =>res.json());
+  }
+}
+
+
+then go to app.component.ts it should look like this:
+
+import { Component } from '@angular/core';
+import {User} from  './user';
+import {DatasService} from './datas.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+  providers:[DatasService]
+})
+export class AppComponent {
+  title = 'Sample form';
+  userList:User[]=[];
+
+  constructor(private dataservice: DatasService) {
+    this.getItems();
+   }
+
+  getItems(){
+    this.dataservice.getUser()
+    .subscribe(items => {
+      this.userList = items;
+      console.log('data from dataservice');
+    });
+  }
+
+  addDetails(forms){
+    let user: User={
+      name: forms.value.name,
+      email:forms.value.email,
+      phone:forms.value.phone
+    };
+    this.dataservice.addUser(user)
+    .subscribe(item =>{
+      console.log(item);
+      this.getItems();
+    });
+  }
+
+  deleteItem(id){
+    this.dataservice.deleteUser(id)
+    .subscribe( data =>{
+      if(data.n==1){
+        for(var i=0;i< this.userList.length;i++){
+          if(id == this.userList[i]._id){
+            this.userList.splice(i,1);
+          }
+        }
+      }
+    });
+  }
+
+}
+
+
+
+-------------------------------------------------------------------------------------
+step 4 completed
+
+
+running the application:
+1) go to mogodb and run monogodbserver
+2) go to backend and run node index.js
+3) go to frontend and run ng serve
+
+
+clone my repository if interested from 
